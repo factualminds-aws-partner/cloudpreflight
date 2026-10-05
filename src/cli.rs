@@ -277,7 +277,13 @@ fn validate(path: &Path, global: &Global) -> Result<u8> {
     let (config, config_path) = Config::load(global.config.as_deref(), path)?;
     let limits = pipeline::limits(&config);
     let discovery = discovery::discover(path, &limits)?;
-    let relative = |file: &Path| file.strip_prefix(&discovery.root).unwrap_or(file).display().to_string();
+    let relative = |file: &Path| {
+        file.strip_prefix(&discovery.root)
+            .unwrap_or(file)
+            .display()
+            .to_string()
+            .replace('\\', "/")
+    };
 
     let mut out = String::new();
     match config_path {

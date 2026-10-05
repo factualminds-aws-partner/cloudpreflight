@@ -54,6 +54,20 @@ impl Sandbox {
             .current_dir(env!("CARGO_MANIFEST_DIR"))
             .args(args)
             .env_clear()
+            // Windows cannot open sockets or find its temp directory without these.
+            .envs(
+                [
+                    "SYSTEMROOT",
+                    "SystemRoot",
+                    "TEMP",
+                    "TMP",
+                    "USERPROFILE",
+                    "APPDATA",
+                    "LOCALAPPDATA",
+                ]
+                .into_iter()
+                .filter_map(|name| Some((name, std::env::var_os(name)?))),
+            )
             .env("HOME", self.home.path())
             .env("CLOUDPREFLIGHT_CACHE_DIR", self.home.path().join("cache"))
             .env("CLOUDPREFLIGHT_AWS_PRICING_URL", self.server.uri())

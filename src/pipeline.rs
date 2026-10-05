@@ -259,7 +259,13 @@ fn load_inputs(
     (options.progress)("Repository scanned".to_string());
 
     let relative = |path: &Path| {
-        let shown = path.strip_prefix(&root).unwrap_or(path).display().to_string();
+        // Forward slashes on every platform keep the output stable for scripts.
+        let shown = path
+            .strip_prefix(&root)
+            .unwrap_or(path)
+            .display()
+            .to_string()
+            .replace('\\', "/");
         if shown.is_empty() { ".".to_string() } else { shown }
     };
     let mut inputs = Vec::new();
