@@ -129,6 +129,9 @@ pub struct ResourceChange {
 pub enum IacSource {
     TerraformPlan,
     TerraformStatic,
+    TerragruntStatic,
+    CloudFormation,
+    Cdk,
 }
 
 impl IacSource {
@@ -136,6 +139,9 @@ impl IacSource {
         match self {
             Self::TerraformPlan => "Terraform (plan JSON)",
             Self::TerraformStatic => "Terraform (static analysis)",
+            Self::TerragruntStatic => "Terragrunt (static analysis)",
+            Self::CloudFormation => "CloudFormation (template)",
+            Self::Cdk => "AWS CDK (cloud assembly)",
         }
     }
 }

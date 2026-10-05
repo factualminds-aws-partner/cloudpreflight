@@ -273,7 +273,8 @@ async fn empty_repository_is_not_an_error() {
     let run = sandbox.run(&["scan", empty.path().to_str().unwrap()]);
     assert_eq!(run.code, 0);
     assert!(
-        run.stdout.contains("No Terraform configuration or plan JSON found"),
+        run.stdout
+            .contains("No Terraform, Terragrunt, CloudFormation or synthesized CDK found"),
         "{}",
         run.stdout
     );
@@ -500,4 +501,198 @@ async fn validate_and_providers_need_no_pricing() {
         "{}",
         bad_config.stderr
     );
+}
+
+const TEMPLATE: &str = r#"
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  Environment: {Type: String, Default: production}
+  Tasks: {Type: Number, Default: 4}
+Conditions:
+  IsProduction: !Equals [!Ref Environment, production]
+Resources:
+  Orders:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      DBInstanceClass: db.m6g.large
+      AllocatedStorage: "200"
+      StorageType: gp3
+      MultiAZ: !If [IsProduction, true, false]
+      MasterUserPassword: change-me-in-secrets-manager
+  WebTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties: {Cpu: "1024", Memory: "2048"}
+  Web:
+    Type: AWS::ECS::Service
+    Properties:
+      LaunchType: FARGATE
+      DesiredCount: !Ref Tasks
+      TaskDefinition: !Ref WebTask
+  Sessions:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.m6g.large
+      NumCacheClusters: 2
+  Nat:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !ImportValue PublicSubnet
+  Network:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: network.yaml
+  Queue:
+    Type: AWS::SQS::Queue
+  Role:
+    Type: AWS::IAM::Role
+"#;
+
+/// The monthly estimate of each planned resource, by address.
+fn monthly_by_address(report: &Value) -> std::collections::BTreeMap<String, String> {
+    report["resources"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|change| {
+            let monthly = change["after"]["monthly"].as_str()?;
+            Some((change["address"].as_str()?.to_string(), monthly.to_string()))
+        })
+        .collect()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cloudformation_cdk_and_terragrunt_are_priced_like_the_equivalent_terraform() {
+    let sandbox = Sandbox::new().await;
+    let terraform: Value =
+        serde_json::from_str(&sandbox.run(&["scan", HCL_FIXTURE, "--format", "json"]).stdout).unwrap();
+    let expected = monthly_by_address(&terraform);
+
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(root, "cfn/stack.yaml", TEMPLATE);
+    write(
+        root,
+        "cfn/network.yaml",
+        "AWSTemplateFormatVersion: '2010-09-09'\nResources:\n  Nat:\n    Type: AWS::EC2::NatGateway\n",
+    );
+    write(root, "app/cdk.json", r#"{"app": "npx ts-node bin/app.ts"}"#);
+    write(
+        root,
+        "app/cdk.out/manifest.json",
+        r#"{"version": "36.0.0", "artifacts": {"Api": {"type": "aws:cloudformation:stack",
+            "environment": "aws://unknown-account/us-east-1", "properties": {"templateFile": "Api.template.json"}}}}"#,
+    );
+    write(
+        root,
+        "app/cdk.out/Api.template.json",
+        r#"{"Resources": {
+            "Carts": {"Type": "AWS::DynamoDB::Table", "Properties": {"BillingMode": "PAY_PER_REQUEST"}},
+            "CDKMetadata": {"Type": "AWS::CDK::Metadata"}}}"#,
+    );
+    write(
+        root,
+        "modules/db/main.tf",
+        r#"
+        variable "class" { default = "db.t3.micro" }
+        variable "multi_az" { default = false }
+        resource "aws_db_instance" "orders" {
+          engine            = "postgres"
+          instance_class    = var.class
+          allocated_storage = 200
+          storage_type      = "gp3"
+          multi_az          = var.multi_az
+        }
+        "#,
+    );
+    write(root, "live/terragrunt.hcl", "inputs = {\n  multi_az = true\n}\n");
+    write(
+        root,
+        "live/prod/db/terragrunt.hcl",
+        r#"
+        include "root" {
+          path = find_in_parent_folders()
+        }
+        terraform {
+          source = "../../../modules//db"
+        }
+        inputs = {
+          class = "db.m6g.large"
+        }
+        "#,
+    );
+
+    let run = sandbox.run(&["scan", root.to_str().unwrap(), "--format", "json"]);
+    assert_eq!(run.code, 0, "{}", run.stderr);
+    let report: Value = serde_json::from_str(&run.stdout).unwrap();
+    let found = monthly_by_address(&report);
+
+    assert_eq!(
+        report["iac"],
+        serde_json::json!([
+            "AWS CDK (cloud assembly)",
+            "CloudFormation (template)",
+            "Terragrunt (static analysis)"
+        ])
+    );
+    // The module is analysed once, through its unit; the nested template through its parent.
+    assert_eq!(
+        report["sources"],
+        serde_json::json!(["live/prod/db", "cfn/stack.yaml", "app/cdk.out/Api.template.json"])
+    );
+    assert_eq!(report["errors"], serde_json::json!([]));
+
+    for (address, equivalent) in [
+        ("Orders", "aws_db_instance.orders"),
+        ("Web", "aws_ecs_service.web"),
+        ("Sessions", "aws_elasticache_replication_group.sessions"),
+        ("Nat", "aws_nat_gateway.main[0]"),
+        ("Network.Nat", "aws_nat_gateway.main[0]"),
+        ("Api.Carts", "aws_dynamodb_table.carts"),
+        ("aws_db_instance.orders", "aws_db_instance.orders"),
+    ] {
+        assert_eq!(found.get(address), expected.get(equivalent), "{address}");
+        assert!(found.contains_key(address), "{address} is not priced: {found:?}");
+    }
+
+    assert_eq!(report["counts"]["unsupported"], 1);
+    assert_eq!(report["unsupported_resources"][0]["resource_type"], "AWS::SQS::Queue");
+    assert_eq!(report["counts"]["no_direct_charge"], 3);
+    let findings = report["findings"].as_array().unwrap();
+    let multi_az = |resource: &str| {
+        findings
+            .iter()
+            .any(|finding| finding["rule_id"] == "RDS-MULTIAZ-COST" && finding["resource"] == resource)
+    };
+    assert!(multi_az("Orders") && multi_az("aws_db_instance.orders"), "{findings:?}");
+    assert!(!run.stdout.contains("change-me-in-secrets-manager"));
+
+    let validate = sandbox.run(&["validate", root.to_str().unwrap()]);
+    assert_eq!(validate.code, 0, "{}", validate.stdout);
+    for line in [
+        "ok       terragrunt live/prod/db/terragrunt.hcl",
+        "ok       cloudformation cfn/stack.yaml (8 resources)",
+        "ok       cdk app/cdk.out (1 stacks)",
+    ] {
+        assert!(validate.stdout.contains(line), "{}", validate.stdout);
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn unsynthesized_cdk_and_broken_templates_are_reported() {
+    let sandbox = Sandbox::new().await;
+    let dir = tempfile::tempdir().unwrap();
+    write(dir.path(), "app/cdk.json", "{}");
+    write(
+        dir.path(),
+        "stack.yaml",
+        "AWSTemplateFormatVersion: '2010-09-09'\nResources: [\n",
+    );
+
+    let run = sandbox.run(&["scan", dir.path().to_str().unwrap()]);
+
+    assert_eq!(run.code, 1);
+    assert!(run.stdout.contains("no synthesized cloud assembly"), "{}", run.stdout);
+    assert!(run.stdout.contains("stack.yaml") && run.stdout.contains("not valid YAML"));
 }
