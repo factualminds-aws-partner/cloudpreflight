@@ -1,0 +1,7 @@
+---
+source: tests/cli.rs
+expression: validate.stdout
+---
+-        no config file (defaults apply)
+ok       plan aws-ecommerce-plan/tfplan.json (16 resource changes)
+ok       terraform aws-ecommerce (21 resource blocks)

@@ -94,12 +94,13 @@ pub fn explain(report: &Report, address: &str, options: Options) -> Option<Strin
         .filter(|finding| finding.resource == address || crate::model::strip_index(&finding.resource) == address)
         .collect();
     for finding in findings {
-        painter.line(&format!(
+        let heading = format!(
             "{} {}  {}",
             severity_word(finding.severity),
             finding.rule_id,
             finding.title
-        ));
+        );
+        painter.wrapped(&heading, 0);
         painter.wrapped(&finding.reason, 2);
         painter.wrapped(&format!("Recommendation: {}", finding.recommendation), 2);
     }
@@ -140,36 +141,34 @@ impl Painter {
         self.heading(title);
     }
 
+    /// A labelled value. Long values wrap under themselves, not under the label.
     fn pair(&mut self, label: &str, value: &str) {
-        let _ = writeln!(self.out, "{label:<LABEL_WIDTH$}{value}");
+        let limit = self.width().saturating_sub(LABEL_WIDTH).max(20);
+        for (index, line) in wrap(value, limit).iter().enumerate() {
+            let label = if index == 0 { label } else { "" };
+            let _ = writeln!(self.out, "{label:<LABEL_WIDTH$}{line}");
+        }
     }
 
     /// Word-wraps `text` to the terminal width with a hanging indent.
     fn wrapped(&mut self, text: &str, indent: usize) {
         let limit = self.width().saturating_sub(indent).max(20);
-        let mut line = String::new();
-        for word in text.split_whitespace() {
-            if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > limit {
-                let _ = writeln!(self.out, "{:indent$}{line}", "");
-                line.clear();
-            }
-            if !line.is_empty() {
-                line.push(' ');
-            }
-            line.push_str(word);
-        }
-        if !line.is_empty() {
+        for line in wrap(text, limit) {
             let _ = writeln!(self.out, "{:indent$}{line}", "");
         }
     }
 
-    /// One row: flexible left text, right-aligned value column.
+    /// One row: left text and a right-aligned value. When both do not fit on one
+    /// line the value moves to its own line instead of squeezing the name away.
     fn row(&mut self, left: &str, right: &str) {
-        let available = self.width().saturating_sub(right.chars().count() + 2);
-        let left = truncate(left, available, self.options.unicode);
-        let padding = self
-            .width()
-            .saturating_sub(left.chars().count() + right.chars().count());
+        let width = self.width();
+        let right_width = right.chars().count();
+        if left.chars().count() + 2 + right_width > width {
+            let left = truncate(left, width, self.options.unicode);
+            let _ = writeln!(self.out, "{left}\n{right:>width$}");
+            return;
+        }
+        let padding = width - left.chars().count() - right_width;
         let _ = writeln!(self.out, "{left}{:padding$}{right}", "");
     }
 
@@ -222,15 +221,14 @@ impl Painter {
             self.pair("Usage", &format!("profile: {profile}"));
         }
 
-        let estimate = format!(
-            "{} {} / month   ({} {} / year)",
-            self.approx(),
-            money(report.costs.after),
-            self.approx(),
-            money(report.costs.annual_after)
+        let bold = Style::new().bold();
+        let monthly = self.paint(
+            &format!("{} {} / month", self.approx(), money(report.costs.after)),
+            bold,
         );
-        let estimate = self.paint(&estimate, Style::new().bold());
-        self.pair("Estimate", &estimate);
+        let yearly = format!("{} {} / year", self.approx(), money(report.costs.annual_after));
+        self.pair("Estimate", &monthly);
+        self.pair("", &yearly);
 
         let excluded = counts.partially_priced + counts.unresolved + counts.unsupported;
         if excluded > 0 {
@@ -247,10 +245,8 @@ impl Painter {
                 ("within budget", AnsiColor::Green)
             };
             let status = self.paint(word, Style::new().fg_color(Some(color.into())));
-            self.pair(
-                "Budget",
-                &format!("{} / month, {percent}% used, {status}", money(budget.monthly)),
-            );
+            self.pair("Budget", &format!("{} / month", money(budget.monthly)));
+            self.pair("", &format!("{percent}% used, {status}"));
         }
     }
 
@@ -372,7 +368,18 @@ impl Painter {
                 severity_word(finding.severity),
                 Style::new().fg_color(Some(color.into())),
             );
-            let _ = writeln!(self.out, "{severity}  {}", finding.title);
+            let indent = severity_word(finding.severity).len() + 2;
+            let title = wrap(&finding.title, self.width().saturating_sub(indent));
+            for (index, line) in title.iter().enumerate() {
+                match index {
+                    0 => {
+                        let _ = writeln!(self.out, "{severity}  {line}");
+                    }
+                    _ => {
+                        let _ = writeln!(self.out, "{:indent$}{line}", "");
+                    }
+                }
+            }
             let impact = match finding.estimated_impact {
                 Some(impact) => format!(", {} {} / month", self.approx(), money(impact)),
                 None => String::new(),
@@ -435,10 +442,11 @@ impl Painter {
                 continue;
             }
             if !any {
-                self.section("Not priced (excluded from the estimate, not counted as $0)");
+                self.section("Not priced");
+                self.wrapped("Excluded from the estimate; not counted as $0.", 0);
                 any = true;
             }
-            self.line(&change.address);
+            self.wrapped(&change.address, 0);
             for component in unresolved {
                 if let Outcome::Unresolved { reason } = &component.outcome {
                     self.wrapped(&format!("{}: {reason}", component.name), 4);
@@ -457,7 +465,7 @@ impl Painter {
         ));
         let limit = if self.options.verbose { usize::MAX } else { MAX_ROWS };
         for skipped in report.unsupported_resources.iter().take(limit) {
-            self.line(&skipped.address);
+            self.wrapped(&skipped.address, 0);
         }
         if report.unsupported_resources.len() > limit {
             self.line(&format!("... and {} more", report.unsupported_resources.len() - limit));
@@ -498,7 +506,8 @@ impl Painter {
             .filter_map(|change| Some((change, change.after.as_ref()?.monthly?)))
             .max_by(|a, b| a.1.cmp(&b.1).then_with(|| b.0.address.cmp(&a.0.address)));
         if let Some((change, _)) = top {
-            let _ = writeln!(self.out, "\nRun: cloudpreflight explain '{}'", change.address);
+            self.out.push('\n');
+            self.wrapped(&format!("Run: cloudpreflight explain '{}'", change.address), 0);
         }
     }
 
@@ -535,6 +544,29 @@ impl Painter {
             self.wrapped(&format!("Note: {note}"), 2);
         }
     }
+}
+
+fn wrap(text: &str, limit: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut line = String::new();
+    for word in text.split_whitespace() {
+        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > limit {
+            lines.push(std::mem::take(&mut line));
+        }
+        if !line.is_empty() {
+            line.push(' ');
+        }
+        // A word longer than the line (a deep module address) is split, never dropped.
+        let mut rest: Vec<char> = word.chars().collect();
+        while rest.len() > limit {
+            lines.push(rest.drain(..limit).collect());
+        }
+        line.extend(rest);
+    }
+    if !line.is_empty() {
+        lines.push(line);
+    }
+    lines
 }
 
 fn disclaimer(report: &Report) -> String {

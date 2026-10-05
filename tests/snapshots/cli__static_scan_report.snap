@@ -1,0 +1,86 @@
+---
+source: tests/cli.rs
+expression: run.stdout
+---
+Cloud Cost Preflight
+────────────────────────────────────────────────────────────────────────────────
+Project       aws-ecommerce
+Detected      Terraform (static analysis)
+Cloud         AWS
+Region        us-east-1
+Resources     25 (11 priced, 3 unsupported, 11 no direct charge)
+Pricing       AWS public list prices (on-demand), published up to 2026-10-03
+Usage         profile: standard
+Estimate      ≈ $1,084.21 / month
+              ≈ $13,010.49 / year
+              Not a complete total: 3 resource(s) could not be fully priced and
+              are not counted as $0.
+Budget        $2,500.00 / month
+              43% used, within budget
+
+Cost by resource
+────────────────────────────────────────────────────────────────────────────────
+aws_db_instance.orders                                                   $278.14
+aws_elasticache_replication_group.sessions                               $217.54
+aws_cloudfront_distribution.storefront                                   $210.00
+aws_ecs_service.web                                                      $144.16
+aws_nat_gateway.main[0]                                                   $55.35
+aws_nat_gateway.main[1]                                                   $55.35
+aws_lb.web                                                                $45.63
+aws_s3_bucket.catalog                                                     $38.00
+aws_s3_bucket.logs                                                        $20.50
+aws_dynamodb_table.carts                                                  $11.88
+aws_lambda_function.order_events                                           $7.67
+
+Top cost drivers
+────────────────────────────────────────────────────────────────────────────────
+RDS                                                                      $278.14
+ElastiCache                                                              $217.54
+CloudFront                                                               $210.00
+ECS                                                                      $144.16
+NAT Gateway                                                              $110.70
+
+FinOps findings
+────────────────────────────────────────────────────────────────────────────────
+HIGH  RDS Multi-AZ adds significant fixed monthly cost
+      aws_db_instance.orders (RDS-MULTIAZ-COST, ≈ $139.07 / month)
+MED   NAT Gateway traffic assumptions are undefined
+      aws_nat_gateway.main[0] (NAT-TRAFFIC-UNDEFINED)
+MED   NAT Gateway traffic assumptions are undefined
+      aws_nat_gateway.main[1] (NAT-TRAFFIC-UNDEFINED)
+LOW   S3 lifecycle policy is not configured
+      aws_s3_bucket.catalog (S3-NO-LIFECYCLE)
+
+Usage assumptions
+────────────────────────────────────────────────────────────────────────────────
+CloudFront data_transfer_out_gb                           2,000  [config: usage]
+CloudFront https_requests_monthly                    40,000,000  [config: usage]
+DynamoDB read_request_units_monthly              20,000,000  [profile: standard]
+DynamoDB storage_gb                                      50  [profile: standard]
+DynamoDB write_request_units_monthly              5,000,000  [profile: standard]
+Lambda average_duration_ms                              200  [profile: standard]
+Lambda invocations_monthly                        5,000,000  [profile: standard]
+Load Balancing lcu_average                                5  [profile: standard]
+NAT Gateway data_processed_gb x2                        500  [profile: standard]
+S3 requests_monthly                              10,000,000  [profile: standard]
+S3 requests_monthly                      25,000,000  [config: resource override]
+S3 storage_gb                                 1,000  [config: resource override]
+S3 storage_gb                                           500  [profile: standard]
+S3 write_requests_monthly x2                      1,000,000  [profile: standard]
+These volumes are not visible in infrastructure code. Replace them with measured
+values under `usage:` in the config file.
+
+Unsupported resources: 3
+────────────────────────────────────────────────────────────────────────────────
+aws_eip.nat[0]
+aws_eip.nat[1]
+aws_cloudwatch_log_group.web
+Reason: no pricing adapter is available for these resource types yet. Their cost
+is not in the estimate.
+
+Estimate confidence: MEDIUM
+Based on AWS public list prices (on-demand). This is an estimate, not a bill:
+discounts, commitments, free tiers, taxes, support and data transfer are not
+included unless shown.
+
+Run: cloudpreflight explain 'aws_db_instance.orders'

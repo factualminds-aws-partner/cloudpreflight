@@ -1,0 +1,97 @@
+---
+source: tests/cli.rs
+expression: run.stdout
+---
+Cloud Cost Preflight
+────────────────────────────────────────────────────────────────────────────────
+Project       aws-ecommerce-plan
+Detected      Terraform (plan JSON)
+Cloud         AWS
+Region        us-east-1
+Resources     14 (9 priced, 2 partially priced, 1 unsupported, 2 no direct
+              charge)
+Pricing       AWS public list prices (on-demand), published up to 2026-10-03
+Usage         profile: standard (default)
+Estimate      ≈ $1,165.44 / month
+              ≈ $13,985.22 / year
+              Not a complete total: 3 resource(s) could not be fully priced and
+              are not counted as $0.
+
+Change vs current state
+────────────────────────────────────────────────────────────────────────────────
+New monthly cost                                                     ≈ $1,165.44
+Previous monthly cost                                                  ≈ $405.82
+Monthly delta                                                 +$759.61 (+187.2%)
+Annualized delta                                                      +$9,115.37
+
+Cost by resource
+────────────────────────────────────────────────────────────────────────────────
+~  aws_db_instance.orders                                                $510.28
++  aws_elasticache_replication_group.sessions                            $217.54
+~  aws_ecs_service.web                                                   $144.16
++  aws_cloudfront_distribution.storefront                                 $95.00
+-  aws_instance.legacy_web                                removed, avoids $70.74
+   aws_nat_gateway.main                                                   $55.35
+-  aws_ebs_volume.legacy_data                             removed, avoids $50.00
+   aws_lb.web                                                             $45.63
++  module.workers.aws_instance.worker[0]                 $30.37 + unpriced parts
++  module.workers.aws_instance.worker[1]                 $30.37 + unpriced parts
+   aws_s3_bucket.catalog                                                  $20.50
++  aws_dynamodb_table.carts                                                $8.58
++  aws_lambda_function.order_events                                        $7.67
++ create   ~ update   - delete   -+ replace
+
+Top cost drivers
+────────────────────────────────────────────────────────────────────────────────
+RDS                                                                      $510.28
+ElastiCache                                                              $217.54
+ECS                                                                      $144.16
+CloudFront                                                                $95.00
+EC2                                                                       $60.74
+
+FinOps findings
+────────────────────────────────────────────────────────────────────────────────
+HIGH  RDS Multi-AZ adds significant fixed monthly cost
+      aws_db_instance.orders (RDS-MULTIAZ-COST, ≈ $255.14 / month)
+MED   NAT Gateway traffic assumptions are undefined
+      aws_nat_gateway.main (NAT-TRAFFIC-UNDEFINED)
+LOW   S3 lifecycle policy is not configured
+      aws_s3_bucket.catalog (S3-NO-LIFECYCLE)
+
+Usage assumptions
+────────────────────────────────────────────────────────────────────────────────
+CloudFront data_transfer_out_gb             1,000  [profile: standard (default)]
+CloudFront https_requests_monthly      10,000,000  [profile: standard (default)]
+DynamoDB storage_gb                            50  [profile: standard (default)]
+Lambda average_duration_ms                    200  [profile: standard (default)]
+Lambda invocations_monthly              5,000,000  [profile: standard (default)]
+Load Balancing lcu_average                      5  [profile: standard (default)]
+NAT Gateway data_processed_gb                 500  [profile: standard (default)]
+S3 requests_monthly                    10,000,000  [profile: standard (default)]
+S3 storage_gb                                 500  [profile: standard (default)]
+S3 write_requests_monthly               1,000,000  [profile: standard (default)]
+These volumes are not visible in infrastructure code. Replace them with measured
+values under `usage:` in the config file.
+
+Not priced
+────────────────────────────────────────────────────────────────────────────────
+Excluded from the estimate; not counted as $0.
+module.workers.aws_instance.worker[0]
+    Root volume storage: root_block_device.0.volume_type is not known: known
+    only after apply
+module.workers.aws_instance.worker[1]
+    Root volume storage: root_block_device.0.volume_type is not known: known
+    only after apply
+
+Unsupported resources: 1
+────────────────────────────────────────────────────────────────────────────────
+aws_cloudwatch_log_group.web
+Reason: no pricing adapter is available for these resource types yet. Their cost
+is not in the estimate.
+
+Estimate confidence: MEDIUM
+Based on AWS public list prices (on-demand). This is an estimate, not a bill:
+discounts, commitments, free tiers, taxes, support and data transfer are not
+included unless shown.
+
+Run: cloudpreflight explain 'aws_db_instance.orders'

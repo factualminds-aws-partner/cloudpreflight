@@ -1,0 +1,55 @@
+{
+ "formatVersion": "v1.0",
+ "disclaimer": "Trimmed copy of the AWS price list for tests. Prices as published on publicationDate.",
+ "offerCode": "AmazonElastiCache",
+ "version": "20260914063714",
+ "publicationDate": "2026-09-14T06:37:14Z",
+ "products": {
+  "BCWUFWUMAS4WVJ4Q": {
+   "sku": "BCWUFWUMAS4WVJ4Q",
+   "productFamily": "Cache Instance",
+   "attributes": {
+    "servicecode": "AmazonElastiCache",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "instanceType": "cache.m6g.large",
+    "currentGeneration": "Yes",
+    "instanceFamily": "Standard",
+    "vcpu": "2",
+    "memory": "6.38 GiB",
+    "networkPerformance": "Up to 10 Gigabit",
+    "cacheEngine": "Redis",
+    "usagetype": "NodeUsage:cache.m6g.large",
+    "operation": "CreateCacheCluster:0002",
+    "normalizationSizeFactor": "4",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon ElastiCache"
+   }
+  }
+ },
+ "terms": {
+  "OnDemand": {
+   "BCWUFWUMAS4WVJ4Q": {
+    "BCWUFWUMAS4WVJ4Q.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "BCWUFWUMAS4WVJ4Q",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "BCWUFWUMAS4WVJ4Q.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "BCWUFWUMAS4WVJ4Q.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.149 per Gen Purpose m6g.large node hour running Redis",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "Hrs",
+       "pricePerUnit": {
+        "USD": "0.1490000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   }
+  }
+ }
+}

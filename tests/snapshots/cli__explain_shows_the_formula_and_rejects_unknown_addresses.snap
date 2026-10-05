@@ -1,0 +1,37 @@
+---
+source: tests/cli.rs
+expression: run.stdout
+---
+aws_ecs_service.web
+────────────────────────────────────────────────────────────────────────────────
+Type          aws_ecs_service
+Action        update
+
+Current state: $36.04
+  Region      us-east-1
+  Fargate vCPU hours                                  $29.55  [exact list price]
+      730 hours × 2 desired_count × 0.5 vcpu = 730 hours × $0.04048 per hours
+      SKU 8CESGAFWKAJ98PME: AWS Fargate - vCPU - US East (N.Virginia)
+  Fargate memory GB hours                              $6.49  [exact list price]
+      730 hours × 2 desired_count × 1 memory_gb = 1460 hours × $0.004445 per
+      hours
+      SKU PBZNQUSEXZUC34C9: AWS Fargate - Memory - US East (N.Virginia)
+  Note: Fargate Linux/x86 rates. Services on EC2 capacity have no charge of
+  their own; the cost is in the instances.
+
+Planned state: $144.16
+  Region      us-east-1
+  Fargate vCPU hours                                 $118.20  [exact list price]
+      730 hours × 4 desired_count × 1 vcpu = 2920 hours × $0.04048 per hours
+      SKU 8CESGAFWKAJ98PME: AWS Fargate - vCPU - US East (N.Virginia)
+  Fargate memory GB hours                             $25.96  [exact list price]
+      730 hours × 4 desired_count × 2 memory_gb = 5840 hours × $0.004445 per
+      hours
+      SKU PBZNQUSEXZUC34C9: AWS Fargate - Memory - US East (N.Virginia)
+  Note: Fargate Linux/x86 rates. Services on EC2 capacity have no charge of
+  their own; the cost is in the instances.
+Monthly delta +$108.12
+
+Based on AWS public list prices (on-demand). This is an estimate, not a bill:
+discounts, commitments, free tiers, taxes, support and data transfer are not
+included unless shown.

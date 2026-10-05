@@ -1,0 +1,225 @@
+{
+ "formatVersion": "v1.0",
+ "disclaimer": "Trimmed copy of the AWS price list for tests. Prices as published on publicationDate.",
+ "offerCode": "AmazonDynamoDB",
+ "version": "20260911124422",
+ "publicationDate": "2026-09-11T12:44:22Z",
+ "products": {
+  "4V475Q49DCKGXQZ2": {
+   "sku": "4V475Q49DCKGXQZ2",
+   "productFamily": "Provisioned IOPS",
+   "attributes": {
+    "servicecode": "AmazonDynamoDB",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "DDB-ReadUnits",
+    "groupDescription": "DynamoDB Provisioned Read Units",
+    "usagetype": "ReadCapacityUnit-Hrs",
+    "operation": "CommittedThroughput",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon DynamoDB"
+   }
+  },
+  "4W4ZMC46EHE8XTTZ": {
+   "sku": "4W4ZMC46EHE8XTTZ",
+   "productFamily": "Amazon DynamoDB PayPerRequest Throughput",
+   "attributes": {
+    "servicecode": "AmazonDynamoDB",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "DDB-ReadUnits",
+    "groupDescription": "DynamoDB PayPerRequest Read Request Units",
+    "usagetype": "ReadRequestUnits",
+    "operation": "PayPerRequestThroughput",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon DynamoDB"
+   }
+  },
+  "F3E2EDSYC6ZNW7XP": {
+   "sku": "F3E2EDSYC6ZNW7XP",
+   "productFamily": "Database Storage",
+   "attributes": {
+    "servicecode": "AmazonDynamoDB",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "volumeType": "Amazon DynamoDB - Indexed DataStore",
+    "usagetype": "TimedStorage-ByteHrs",
+    "operation": "",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon DynamoDB"
+   }
+  },
+  "FGXVD96DKJMUASY3": {
+   "sku": "FGXVD96DKJMUASY3",
+   "productFamily": "Amazon DynamoDB PayPerRequest Throughput",
+   "attributes": {
+    "servicecode": "AmazonDynamoDB",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "DDB-WriteUnits",
+    "groupDescription": "DynamoDB PayPerRequest Write Request Units",
+    "usagetype": "WriteRequestUnits",
+    "operation": "PayPerRequestThroughput",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon DynamoDB"
+   }
+  },
+  "R6PXMNYCEDGZ2EYN": {
+   "sku": "R6PXMNYCEDGZ2EYN",
+   "productFamily": "Provisioned IOPS",
+   "attributes": {
+    "servicecode": "AmazonDynamoDB",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "DDB-WriteUnits",
+    "groupDescription": "DynamoDB Provisioned Write Units",
+    "usagetype": "WriteCapacityUnit-Hrs",
+    "operation": "CommittedThroughput",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon DynamoDB"
+   }
+  }
+ },
+ "terms": {
+  "OnDemand": {
+   "4V475Q49DCKGXQZ2": {
+    "4V475Q49DCKGXQZ2.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "4V475Q49DCKGXQZ2",
+     "effectiveDate": "2026-08-01T00:00:00Z",
+     "priceDimensions": {
+      "4V475Q49DCKGXQZ2.JRTCKXETXF.HBHVWY47CM": {
+       "rateCode": "4V475Q49DCKGXQZ2.JRTCKXETXF.HBHVWY47CM",
+       "description": "$0.00 per hour for 25 units of read capacity for a month (free tier)",
+       "beginRange": "0",
+       "endRange": "18600",
+       "unit": "ReadCapacityUnit-Hrs",
+       "pricePerUnit": {
+        "USD": "0.0000000000"
+       },
+       "appliesTo": []
+      },
+      "4V475Q49DCKGXQZ2.JRTCKXETXF.E63J5HTPNN": {
+       "rateCode": "4V475Q49DCKGXQZ2.JRTCKXETXF.E63J5HTPNN",
+       "description": "$0.00013 per hour for units of read capacity beyond the free tier",
+       "beginRange": "18600",
+       "endRange": "Inf",
+       "unit": "ReadCapacityUnit-Hrs",
+       "pricePerUnit": {
+        "USD": "0.0001300000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "4W4ZMC46EHE8XTTZ": {
+    "4W4ZMC46EHE8XTTZ.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "4W4ZMC46EHE8XTTZ",
+     "effectiveDate": "2026-08-01T00:00:00Z",
+     "priceDimensions": {
+      "4W4ZMC46EHE8XTTZ.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "4W4ZMC46EHE8XTTZ.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.125 per million read request units (N. Virginia)",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "ReadRequestUnits",
+       "pricePerUnit": {
+        "USD": "0.0000001250"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "F3E2EDSYC6ZNW7XP": {
+    "F3E2EDSYC6ZNW7XP.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "F3E2EDSYC6ZNW7XP",
+     "effectiveDate": "2026-08-01T00:00:00Z",
+     "priceDimensions": {
+      "F3E2EDSYC6ZNW7XP.JRTCKXETXF.G2A93NZ7DT": {
+       "rateCode": "F3E2EDSYC6ZNW7XP.JRTCKXETXF.G2A93NZ7DT",
+       "description": "$0.00 per GB-Month of storage for first 25 free GB-Months",
+       "beginRange": "0",
+       "endRange": "25",
+       "unit": "GB-Mo",
+       "pricePerUnit": {
+        "USD": "0.0000000000"
+       },
+       "appliesTo": []
+      },
+      "F3E2EDSYC6ZNW7XP.JRTCKXETXF.VYAP54KATQ": {
+       "rateCode": "F3E2EDSYC6ZNW7XP.JRTCKXETXF.VYAP54KATQ",
+       "description": "$0.25 per GB-Month of storage used beyond first 25 free GB-Months",
+       "beginRange": "25",
+       "endRange": "Inf",
+       "unit": "GB-Mo",
+       "pricePerUnit": {
+        "USD": "0.2500000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "FGXVD96DKJMUASY3": {
+    "FGXVD96DKJMUASY3.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "FGXVD96DKJMUASY3",
+     "effectiveDate": "2026-08-01T00:00:00Z",
+     "priceDimensions": {
+      "FGXVD96DKJMUASY3.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "FGXVD96DKJMUASY3.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.625 per million write request units (N. Virginia)",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "WriteRequestUnits",
+       "pricePerUnit": {
+        "USD": "0.0000006250"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "R6PXMNYCEDGZ2EYN": {
+    "R6PXMNYCEDGZ2EYN.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "R6PXMNYCEDGZ2EYN",
+     "effectiveDate": "2026-08-01T00:00:00Z",
+     "priceDimensions": {
+      "R6PXMNYCEDGZ2EYN.JRTCKXETXF.HBHVWY47CM": {
+       "rateCode": "R6PXMNYCEDGZ2EYN.JRTCKXETXF.HBHVWY47CM",
+       "description": "$0.00 per hour for 25 units of write capacity for a month (free tier)",
+       "beginRange": "0",
+       "endRange": "18600",
+       "unit": "WriteCapacityUnit-Hrs",
+       "pricePerUnit": {
+        "USD": "0.0000000000"
+       },
+       "appliesTo": []
+      },
+      "R6PXMNYCEDGZ2EYN.JRTCKXETXF.E63J5HTPNN": {
+       "rateCode": "R6PXMNYCEDGZ2EYN.JRTCKXETXF.E63J5HTPNN",
+       "description": "$0.00065 per hour for units of write capacity beyond the free tier",
+       "beginRange": "18600",
+       "endRange": "Inf",
+       "unit": "WriteCapacityUnit-Hrs",
+       "pricePerUnit": {
+        "USD": "0.0006500000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   }
+  }
+ }
+}

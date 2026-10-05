@@ -1,0 +1,153 @@
+{
+ "formatVersion": "v1.0",
+ "disclaimer": "Trimmed copy of the AWS price list for tests. Prices as published on publicationDate.",
+ "offerCode": "AmazonCloudFront",
+ "version": "20261003000426",
+ "publicationDate": "2026-10-03T00:04:26Z",
+ "products": {
+  "GV2WFGX37Q9PDSHF": {
+   "sku": "GV2WFGX37Q9PDSHF",
+   "productFamily": "Data Transfer",
+   "attributes": {
+    "servicecode": "AmazonCloudFront",
+    "transferType": "CloudFront Outbound",
+    "fromLocation": "United States",
+    "fromLocationType": "AWS Edge Location",
+    "toLocation": "External",
+    "toLocationType": "Other",
+    "usagetype": "US-DataTransfer-Out-Bytes",
+    "operation": "",
+    "fromRegionCode": "",
+    "servicename": "Amazon CloudFront",
+    "toRegionCode": ""
+   }
+  },
+  "NPFD6SEH9MXS8M4J": {
+   "sku": "NPFD6SEH9MXS8M4J",
+   "productFamily": "Request",
+   "attributes": {
+    "servicecode": "AmazonCloudFront",
+    "location": "United States",
+    "locationType": "AWS Edge Location",
+    "usagetype": "US-Requests-Tier2-HTTPS",
+    "operation": "",
+    "regionCode": "",
+    "requestDescription": "HTTPS GET and HEAD requests",
+    "requestType": "CloudFront-Request-Tier2",
+    "servicename": "Amazon CloudFront"
+   }
+  }
+ },
+ "terms": {
+  "OnDemand": {
+   "GV2WFGX37Q9PDSHF": {
+    "GV2WFGX37Q9PDSHF.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "GV2WFGX37Q9PDSHF",
+     "effectiveDate": "2026-10-01T00:00:00Z",
+     "priceDimensions": {
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.Q3Z75P77EN": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.Q3Z75P77EN",
+       "description": "$0.085 per GB - first 10 TB / month data transfer out",
+       "beginRange": "0",
+       "endRange": "10240",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0850000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.VF6T3GAUKQ": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.VF6T3GAUKQ",
+       "description": "$0.080 per GB - next 40 TB / month data transfer out",
+       "beginRange": "10240",
+       "endRange": "51200",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0800000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.N9EW5UVVPA": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.N9EW5UVVPA",
+       "description": "$0.060 per GB - next 100 TB / month data transfer out",
+       "beginRange": "51200",
+       "endRange": "153600",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0600000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.AZ7GJS7NVF": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.AZ7GJS7NVF",
+       "description": "$0.040 per GB - next 350 TB / month data transfer out",
+       "beginRange": "153600",
+       "endRange": "512000",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0400000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.3B9CK5AZ6J": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.3B9CK5AZ6J",
+       "description": "$0.030 per GB - next 524 TB / month data transfer out",
+       "beginRange": "512000",
+       "endRange": "1048576",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0300000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.RBMR72YW69": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.RBMR72YW69",
+       "description": "$0.025 per GB - next 4 PB / month data transfer out",
+       "beginRange": "1048576",
+       "endRange": "5242880",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0250000000"
+       },
+       "appliesTo": []
+      },
+      "GV2WFGX37Q9PDSHF.JRTCKXETXF.SW9U2ZKBYX": {
+       "rateCode": "GV2WFGX37Q9PDSHF.JRTCKXETXF.SW9U2ZKBYX",
+       "description": "$0.020 per GB - data transfer out / month over 5 PB",
+       "beginRange": "5242880",
+       "endRange": "Inf",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0200000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "NPFD6SEH9MXS8M4J": {
+    "NPFD6SEH9MXS8M4J.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "NPFD6SEH9MXS8M4J",
+     "effectiveDate": "2026-10-01T00:00:00Z",
+     "priceDimensions": {
+      "NPFD6SEH9MXS8M4J.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "NPFD6SEH9MXS8M4J.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.0100 per 10,000 HTTPS Requests",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "Requests",
+       "pricePerUnit": {
+        "USD": "0.0000010000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   }
+  }
+ }
+}

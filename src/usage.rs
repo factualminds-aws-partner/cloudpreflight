@@ -58,6 +58,17 @@ impl Usage {
             );
         };
 
+        // An unusable value must stop the run: skipping it would silently fall back to
+        // the profile's number.
+        validate(&config, "usage")?;
+        for (address, usage) in &overrides {
+            for (key, value) in usage {
+                if to_decimal(value).is_none() {
+                    bail!("resource.\"{address}\".usage.{key}: `{value}` is not a non-negative number within range");
+                }
+            }
+        }
+
         Ok(Self {
             profile: Some(profile),
             profile_is_default: profile_name.is_none(),
@@ -93,6 +104,17 @@ impl Usage {
         let profile = self.profile.as_ref()?;
         let value = nested(&profile.usage, group, key)?;
         Some((value, format!("profile: {}", self.profile_label()?)))
+    }
+}
+
+fn validate(value: &Value, path: &str) -> Result<()> {
+    match value {
+        Value::Null => Ok(()),
+        Value::Object(map) => map
+            .iter()
+            .try_for_each(|(key, value)| validate(value, &format!("{path}.{key}"))),
+        leaf if to_decimal(leaf).is_some() => Ok(()),
+        leaf => bail!("{path}: `{leaf}` is not a non-negative number within range"),
     }
 }
 
@@ -150,6 +172,21 @@ mod tests {
     fn unknown_profile_lists_the_available_ones() {
         let error = Usage::new(Some("enormous"), Value::Null, BTreeMap::new()).unwrap_err();
         assert!(error.to_string().contains("light, standard, high"));
+    }
+
+    #[test]
+    fn unusable_config_values_stop_the_run_instead_of_falling_back_to_the_profile() {
+        for bad in [json!("abc"), json!(-1), json!(1e40), json!([1])] {
+            let config = json!({"aws": {"s3": {"storage_gb": bad}}});
+            let error = Usage::new(None, config, BTreeMap::new()).unwrap_err().to_string();
+            assert!(error.starts_with("usage.aws.s3.storage_gb:"), "{error}");
+        }
+
+        let overrides = BTreeMap::from([(
+            "a.b".to_string(),
+            BTreeMap::from([("storage_gb".to_string(), json!("x"))]),
+        )]);
+        assert!(Usage::new(None, Value::Null, overrides).is_err());
     }
 
     #[test]

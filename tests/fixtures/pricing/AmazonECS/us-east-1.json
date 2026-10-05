@@ -1,0 +1,85 @@
+{
+ "formatVersion": "v1.0",
+ "disclaimer": "Trimmed copy of the AWS price list for tests. Prices as published on publicationDate.",
+ "offerCode": "AmazonECS",
+ "version": "20260911124425",
+ "publicationDate": "2026-09-11T12:44:25Z",
+ "products": {
+  "8CESGAFWKAJ98PME": {
+   "sku": "8CESGAFWKAJ98PME",
+   "productFamily": "Compute",
+   "attributes": {
+    "servicecode": "AmazonECS",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "tenancy": "Shared",
+    "usagetype": "USE1-Fargate-vCPU-Hours:perCPU",
+    "operation": "",
+    "cputype": "perCPU",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Container Service"
+   }
+  },
+  "PBZNQUSEXZUC34C9": {
+   "sku": "PBZNQUSEXZUC34C9",
+   "productFamily": "Compute",
+   "attributes": {
+    "servicecode": "AmazonECS",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "tenancy": "Shared",
+    "usagetype": "USE1-Fargate-GB-Hours",
+    "operation": "",
+    "memorytype": "perGB",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Container Service"
+   }
+  }
+ },
+ "terms": {
+  "OnDemand": {
+   "8CESGAFWKAJ98PME": {
+    "8CESGAFWKAJ98PME.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "8CESGAFWKAJ98PME",
+     "effectiveDate": "2026-07-01T00:00:00Z",
+     "priceDimensions": {
+      "8CESGAFWKAJ98PME.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "8CESGAFWKAJ98PME.JRTCKXETXF.6YS6EN2CT7",
+       "description": "AWS Fargate - vCPU - US East (N.Virginia)",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "hours",
+       "pricePerUnit": {
+        "USD": "0.0404800000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "PBZNQUSEXZUC34C9": {
+    "PBZNQUSEXZUC34C9.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "PBZNQUSEXZUC34C9",
+     "effectiveDate": "2026-07-01T00:00:00Z",
+     "priceDimensions": {
+      "PBZNQUSEXZUC34C9.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "PBZNQUSEXZUC34C9.JRTCKXETXF.6YS6EN2CT7",
+       "description": "AWS Fargate - Memory  - US East (N.Virginia)",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "hours",
+       "pricePerUnit": {
+        "USD": "0.0044450000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,254 @@
+{
+ "formatVersion": "v1.0",
+ "disclaimer": "Trimmed copy of the AWS price list for tests. Prices as published on publicationDate.",
+ "offerCode": "AmazonEC2",
+ "version": "20260925174521",
+ "publicationDate": "2026-09-25T17:45:21Z",
+ "products": {
+  "59S5R83GFPUAGVR5": {
+   "sku": "59S5R83GFPUAGVR5",
+   "productFamily": "NAT Gateway",
+   "attributes": {
+    "servicecode": "AmazonEC2",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "NGW:NatGateway",
+    "groupDescription": "Charge for per GB data processed by NatGateways",
+    "usagetype": "NatGateway-Bytes",
+    "operation": "NatGateway",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Compute Cloud"
+   }
+  },
+  "HBVJM3Q9S8K6MNPJ": {
+   "sku": "HBVJM3Q9S8K6MNPJ",
+   "productFamily": "Compute Instance",
+   "attributes": {
+    "servicecode": "AmazonEC2",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "instanceType": "t3.large",
+    "currentGeneration": "Yes",
+    "instanceFamily": "General purpose",
+    "vcpu": "2",
+    "physicalProcessor": "Intel Skylake E5 2686 v5",
+    "clockSpeed": "3.1 GHz",
+    "memory": "8 GiB",
+    "storage": "EBS only",
+    "networkPerformance": "Up to 5 Gigabit",
+    "processorArchitecture": "64-bit",
+    "tenancy": "Shared",
+    "operatingSystem": "Linux",
+    "licenseModel": "No License required",
+    "usagetype": "BoxUsage:t3.large",
+    "operation": "RunInstances",
+    "availabilityzone": "NA",
+    "capacitystatus": "Used",
+    "classicnetworkingsupport": "false",
+    "dedicatedEbsThroughput": "Up to 2780 Mbps",
+    "dedicatedEbsThroughputDescription": "695 Mbps",
+    "ecu": "NA",
+    "enhancedNetworkingSupported": "No",
+    "gpuMemory": "NA",
+    "instanceFamilyCategory": "General Purpose",
+    "intelAvxAvailable": "Yes",
+    "intelAvx2Available": "Yes",
+    "intelTurboAvailable": "Yes",
+    "marketoption": "OnDemand",
+    "normalizationSizeFactor": "4",
+    "preInstalledSw": "NA",
+    "processorFeatures": "AVX; AVX2; Intel AVX; Intel AVX2; Intel AVX512; Intel Turbo",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Compute Cloud",
+    "vpcnetworkingsupport": "true"
+   }
+  },
+  "HY3BZPP2B6K8MSJF": {
+   "sku": "HY3BZPP2B6K8MSJF",
+   "productFamily": "Storage",
+   "attributes": {
+    "servicecode": "AmazonEC2",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "storageMedia": "SSD-backed",
+    "volumeType": "General Purpose",
+    "maxVolumeSize": "16 TiB",
+    "maxIopsvolume": "16000",
+    "maxIopsBurstPerformance": "3000 for volumes <= 1 TiB",
+    "maxThroughputvolume": "250 MiB/s",
+    "usagetype": "EBS:VolumeUsage.gp2",
+    "operation": "",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Compute Cloud",
+    "volumeApiName": "gp2"
+   }
+  },
+  "M2YSHUBETB3JX4M4": {
+   "sku": "M2YSHUBETB3JX4M4",
+   "productFamily": "NAT Gateway",
+   "attributes": {
+    "servicecode": "AmazonEC2",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "group": "NGW:NatGateway",
+    "groupDescription": "Hourly charge for NAT Gateways",
+    "usagetype": "NatGateway-Hours",
+    "operation": "NatGateway",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Compute Cloud"
+   }
+  },
+  "NN4EGUUQRWVYP98C": {
+   "sku": "NN4EGUUQRWVYP98C",
+   "productFamily": "Compute Instance",
+   "attributes": {
+    "servicecode": "AmazonEC2",
+    "location": "US East (N. Virginia)",
+    "locationType": "AWS Region",
+    "instanceType": "t3.medium",
+    "currentGeneration": "Yes",
+    "instanceFamily": "General purpose",
+    "vcpu": "2",
+    "physicalProcessor": "Intel Skylake E5 2686 v5",
+    "clockSpeed": "3.1 GHz",
+    "memory": "4 GiB",
+    "storage": "EBS only",
+    "networkPerformance": "Up to 5 Gigabit",
+    "processorArchitecture": "64-bit",
+    "tenancy": "Shared",
+    "operatingSystem": "Linux",
+    "licenseModel": "No License required",
+    "usagetype": "BoxUsage:t3.medium",
+    "operation": "RunInstances",
+    "availabilityzone": "NA",
+    "capacitystatus": "Used",
+    "classicnetworkingsupport": "false",
+    "dedicatedEbsThroughput": "Up to 2085 Mbps",
+    "dedicatedEbsThroughputDescription": "347 Mbps",
+    "ecu": "NA",
+    "enhancedNetworkingSupported": "No",
+    "gpuMemory": "NA",
+    "instanceFamilyCategory": "General Purpose",
+    "intelAvxAvailable": "Yes",
+    "intelAvx2Available": "Yes",
+    "intelTurboAvailable": "Yes",
+    "marketoption": "OnDemand",
+    "normalizationSizeFactor": "2",
+    "preInstalledSw": "NA",
+    "processorFeatures": "AVX; AVX2; Intel AVX; Intel AVX2; Intel AVX512; Intel Turbo",
+    "regionCode": "us-east-1",
+    "servicename": "Amazon Elastic Compute Cloud",
+    "vpcnetworkingsupport": "true"
+   }
+  }
+ },
+ "terms": {
+  "OnDemand": {
+   "59S5R83GFPUAGVR5": {
+    "59S5R83GFPUAGVR5.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "59S5R83GFPUAGVR5",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "59S5R83GFPUAGVR5.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "59S5R83GFPUAGVR5.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.045 per GB Data Processed by NAT Gateways",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "GB",
+       "pricePerUnit": {
+        "USD": "0.0450000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "HBVJM3Q9S8K6MNPJ": {
+    "HBVJM3Q9S8K6MNPJ.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "HBVJM3Q9S8K6MNPJ",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "HBVJM3Q9S8K6MNPJ.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "HBVJM3Q9S8K6MNPJ.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.0832 per On Demand Linux t3.large Instance Hour",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "Hrs",
+       "pricePerUnit": {
+        "USD": "0.0832000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "HY3BZPP2B6K8MSJF": {
+    "HY3BZPP2B6K8MSJF.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "HY3BZPP2B6K8MSJF",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "HY3BZPP2B6K8MSJF.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "HY3BZPP2B6K8MSJF.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.10 per GB-month of General Purpose SSD (gp2) provisioned storage - US East (Northern Virginia)",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "GB-Mo",
+       "pricePerUnit": {
+        "USD": "0.1000000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "M2YSHUBETB3JX4M4": {
+    "M2YSHUBETB3JX4M4.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "M2YSHUBETB3JX4M4",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "M2YSHUBETB3JX4M4.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "M2YSHUBETB3JX4M4.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.045 per NAT Gateway Hour",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "Hrs",
+       "pricePerUnit": {
+        "USD": "0.0450000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   },
+   "NN4EGUUQRWVYP98C": {
+    "NN4EGUUQRWVYP98C.JRTCKXETXF": {
+     "offerTermCode": "JRTCKXETXF",
+     "sku": "NN4EGUUQRWVYP98C",
+     "effectiveDate": "2026-09-01T00:00:00Z",
+     "priceDimensions": {
+      "NN4EGUUQRWVYP98C.JRTCKXETXF.6YS6EN2CT7": {
+       "rateCode": "NN4EGUUQRWVYP98C.JRTCKXETXF.6YS6EN2CT7",
+       "description": "$0.0416 per On Demand Linux t3.medium Instance Hour",
+       "beginRange": "0",
+       "endRange": "Inf",
+       "unit": "Hrs",
+       "pricePerUnit": {
+        "USD": "0.0416000000"
+       },
+       "appliesTo": []
+      }
+     },
+     "termAttributes": {}
+    }
+   }
+  }
+ }
+}
