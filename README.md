@@ -6,8 +6,8 @@
 
 **See the cost before you ship the infrastructure.**
 
-`cloudpreflight` reads Terraform, works out what it will create, and estimates the
-monthly cost from public AWS list prices. It runs locally, needs no account or cloud
+`cloudpreflight` reads Terraform, Terragrunt, CloudFormation and synthesized CDK, works
+out what they will create, and estimates the monthly cost from public AWS list prices. It runs locally, needs no account or cloud
 credentials, and never executes your infrastructure code.
 
 ```
@@ -48,7 +48,7 @@ This is the first slice of a larger design. What works today:
 
 | Area | Supported now | Not yet |
 | --- | --- | --- |
-| IaC | Terraform plan JSON, Terraform static analysis (`.tf`, `.tf.json`) | Terragrunt, CloudFormation, CDK (detected and reported, not analysed) |
+| IaC | Terraform plan JSON, Terraform static analysis (`.tf`, `.tf.json`), Terragrunt units with a local source, CloudFormation templates (YAML, JSON), CDK cloud assemblies (`cdk.out`) | Running `terraform`, `terragrunt` or `cdk synth` for you; remote module sources; the CloudFormation cost estimation API |
 | Cloud | AWS public on-demand list prices | Azure, GCP, account-specific pricing |
 | Output | Terminal report, versioned JSON | Markdown, SARIF |
 | Commands | `scan`, `estimate`, `explain`, `validate`, `providers` | `init`, `auth`, `pricing`, `doctor` |
@@ -57,8 +57,9 @@ Priced AWS resource types: `aws_instance`, `aws_ebs_volume`, `aws_db_instance`
 (PostgreSQL, MySQL, MariaDB), `aws_lb`/`aws_alb`, `aws_nat_gateway`, `aws_ecs_service`
 (Fargate), `aws_lambda_function`, `aws_s3_bucket`, `aws_cloudfront_distribution`,
 `aws_dynamodb_table`, `aws_elasticache_cluster`, `aws_elasticache_replication_group`.
-Run `cloudpreflight providers` for the current list. Anything else is reported as
-unsupported. It is never shown as `$0`.
+The CloudFormation equivalents (`AWS::EC2::Instance`, `AWS::RDS::DBInstance`, and so on)
+are priced by the same data. Run `cloudpreflight providers` for the current list.
+Anything else is reported as unsupported. It is never shown as `$0`.
 
 ## Install
 
@@ -92,9 +93,31 @@ cloudpreflight scan .
 by content) and prefers them over static analysis of the same directory.
 `cloudpreflight` does not run Terraform for you.
 
+### Terragrunt, CloudFormation and CDK
+
+- **Terragrunt.** Each `terragrunt.hcl` with a local `terraform.source` (or Terraform
+  files beside it) is analysed as that module with the unit's `inputs`. `include`,
+  `locals`, `read_terragrunt_config`, `find_in_parent_folders` and the path helpers are
+  evaluated, and a provider region in a `generate` block is picked up. Dependency
+  outputs and `get_env` are not known statically, so inputs built from them are
+  unknown. A unit with a remote source is reported and left out: put its plan JSON in
+  the unit directory to have it estimated.
+- **CloudFormation.** Templates are recognised by `AWSTemplateFormatVersion`.
+  Parameters take their defaults; `Ref`, `Fn::Sub`, `Fn::Join`, `Fn::Select`,
+  `Fn::Split`, `Fn::FindInMap`, `Fn::If` and conditions are evaluated; a resource whose
+  condition is false is left out. Local nested stacks are read with the parameters the
+  parent passes. Values that exist only after deployment are unknown.
+- **CDK.** Run `cdk synth` yourself, then scan. Every stack in `cdk.out` (or the
+  `output` directory named in `cdk.json`) is read, stages and nested stacks included.
+  Synthesis executes your application code, so `cloudpreflight` never starts it.
+
+Resources are addressed by logical ID (`Orders`), prefixed with the stack name for CDK
+(`Api.Orders`) and with the nested stack for nested templates (`Network.Nat`).
+
 ## How the estimate is built
 
-1. **Discover.** A bounded, read-only walk finds plan files and Terraform root modules.
+1. **Discover.** A bounded, read-only walk finds plan files, Terraform root modules,
+   Terragrunt units, CloudFormation templates and CDK cloud assemblies.
 2. **Read the IaC.** A plan gives exact before and after values. Static analysis
    resolves variable defaults, `terraform.tfvars`, locals, literal `count` and
    `for_each`, and local modules. Whatever it cannot resolve is marked unknown.

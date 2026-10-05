@@ -41,10 +41,12 @@ struct Walk<'a> {
     changes: Vec<ResourceChange>,
     warnings: Vec<String>,
     provider_regions: BTreeMap<String, String>,
+    /// Values supplied to the root module from outside it; tfvars files override them.
+    root_inputs: Inputs,
 }
 
 /// Variable values handed to a module. `None` marks an input whose value is not known.
-type Inputs = BTreeMap<String, Option<Value>>;
+pub type Inputs = BTreeMap<String, Option<Value>>;
 
 struct Instance {
     suffix: String,
@@ -53,11 +55,17 @@ struct Instance {
 }
 
 pub fn parse_root(dir: &Path, origin: &str, options: &Options) -> Result<Input> {
+    parse_root_with(dir, origin, options, Inputs::new())
+}
+
+/// As `parse_root`, with variable values supplied the way `TF_VAR_*` would supply them.
+pub fn parse_root_with(dir: &Path, origin: &str, options: &Options, root_inputs: Inputs) -> Result<Input> {
     let mut walk = Walk {
         options,
         changes: Vec::new(),
         warnings: Vec::new(),
         provider_regions: BTreeMap::new(),
+        root_inputs,
     };
     walk.module(dir, "", None, 0)?;
 
@@ -117,7 +125,11 @@ impl Walk<'_> {
         let is_root = inputs.is_none();
         let inputs = match inputs {
             Some(inputs) => inputs,
-            None => self.tfvars(dir),
+            None => {
+                let mut inputs = self.root_inputs.clone();
+                inputs.extend(self.tfvars(dir));
+                inputs
+            }
         };
 
         let mut context = base_context(dir);
@@ -136,7 +148,7 @@ impl Walk<'_> {
         }
         context.declare_var("var", Value::Object(variables));
 
-        self.locals(&blocks, &mut context);
+        declare_locals(&blocks, &mut context);
 
         if is_root {
             for block in blocks.iter().filter(|block| block.identifier.as_str() == "provider") {
@@ -189,36 +201,6 @@ impl Walk<'_> {
             }
         }
         inputs
-    }
-
-    /// Locals may reference each other in any order, so evaluate until nothing new resolves.
-    fn locals(&mut self, blocks: &[Block], context: &mut Context) {
-        let mut pending: Vec<(String, &Expression)> = blocks
-            .iter()
-            .filter(|block| block.identifier.as_str() == "locals")
-            .flat_map(|block| &block.body.0)
-            .filter_map(|structure| match structure {
-                Structure::Attribute(attribute) => Some((attribute.key.to_string(), &attribute.expr)),
-                Structure::Block(_) => None,
-            })
-            .collect();
-
-        let mut resolved = hcl::Map::new();
-        for _ in 0..LOCALS_PASSES {
-            context.declare_var("local", Value::Object(resolved.clone()));
-            let before = pending.len();
-            pending.retain(|(name, expression)| match expression.evaluate(context) {
-                Ok(value) => {
-                    resolved.insert(name.clone(), value);
-                    false
-                }
-                Err(_) => true,
-            });
-            if pending.is_empty() || pending.len() == before {
-                break;
-            }
-        }
-        context.declare_var("local", Value::Object(resolved));
     }
 
     fn resource(&mut self, block: &Block, prefix: &str, context: &Context) {
@@ -330,6 +312,37 @@ impl Walk<'_> {
         }
         Ok(())
     }
+}
+
+/// Locals may reference each other in any order, so evaluate until nothing new resolves.
+pub(super) fn declare_locals(blocks: &[Block], context: &mut Context) -> hcl::Map<String, Value> {
+    let mut pending: Vec<(String, &Expression)> = blocks
+        .iter()
+        .filter(|block| block.identifier.as_str() == "locals")
+        .flat_map(|block| &block.body.0)
+        .filter_map(|structure| match structure {
+            Structure::Attribute(attribute) => Some((attribute.key.to_string(), &attribute.expr)),
+            Structure::Block(_) => None,
+        })
+        .collect();
+
+    let mut resolved = hcl::Map::new();
+    for _ in 0..LOCALS_PASSES {
+        context.declare_var("local", Value::Object(resolved.clone()));
+        let before = pending.len();
+        pending.retain(|(name, expression)| match expression.evaluate(context) {
+            Ok(value) => {
+                resolved.insert(name.clone(), value);
+                false
+            }
+            Err(_) => true,
+        });
+        if pending.is_empty() || pending.len() == before {
+            break;
+        }
+    }
+    context.declare_var("local", Value::Object(resolved.clone()));
+    resolved
 }
 
 /// Expands `count` and `for_each`. When either cannot be evaluated statically, one
@@ -508,14 +521,14 @@ fn resource_references(expression: &Expression) -> BTreeSet<String> {
     found
 }
 
-fn attribute<'a>(body: &'a Body, key: &str) -> Option<&'a Expression> {
+pub(super) fn attribute<'a>(body: &'a Body, key: &str) -> Option<&'a Expression> {
     body.0.iter().find_map(|structure| match structure {
         Structure::Attribute(attribute) if attribute.key.as_str() == key => Some(&attribute.expr),
         _ => None,
     })
 }
 
-fn label(block: &Block, index: usize) -> Option<String> {
+pub(super) fn label(block: &Block, index: usize) -> Option<String> {
     block.labels.get(index).map(|label| label.as_str().to_string())
 }
 
@@ -528,7 +541,7 @@ fn object<const N: usize>(entries: [(&str, Value); N]) -> Value {
     )
 }
 
-fn base_context(dir: &Path) -> Context<'static> {
+pub(super) fn base_context(dir: &Path) -> Context<'static> {
     let mut context = Context::new();
     let module_path = dir.to_string_lossy().to_string();
     context.declare_var(

@@ -11,7 +11,7 @@ use rust_decimal::Decimal;
 
 use crate::config::Config;
 use crate::discovery;
-use crate::iac::{terraform_hcl, terraform_plan};
+use crate::iac::{cdk, cloudformation, terraform_hcl, terraform_plan};
 use crate::mapping::Mappings;
 use crate::model::Report;
 use crate::pipeline::{self, ScanOptions};
@@ -328,14 +328,52 @@ fn validate(path: &Path, global: &Global) -> Result<u8> {
             }
         }
     }
-    for technology in &discovery.not_yet_supported {
-        say!(out, "skipped  {technology} detected, not analysed yet");
+    for config in &discovery.terragrunt {
+        let parsed = discovery::read_limited(config, limits.max_file_bytes)
+            .map_err(anyhow::Error::msg)
+            .and_then(|text| Ok(hcl::parse(&text)?));
+        match parsed {
+            Ok(_) => say!(out, "ok       terragrunt {}", relative(config)),
+            Err(error) => {
+                failures += 1;
+                say!(out, "invalid  terragrunt {}: {error:#}", relative(config));
+            }
+        }
+    }
+    let template_options = cloudformation::Options {
+        scan_root: &discovery.root,
+        max_file_bytes: limits.max_file_bytes,
+        region: None,
+    };
+    for template in &discovery.templates {
+        let source = crate::model::IacSource::CloudFormation;
+        match cloudformation::parse_file(template, "", "", source, &template_options) {
+            Ok(parsed) => say!(
+                out,
+                "ok       cloudformation {} ({} resources)",
+                relative(template),
+                parsed.input.changes.len()
+            ),
+            Err(error) => {
+                failures += 1;
+                say!(out, "invalid  cloudformation {}: {error:#}", relative(template));
+            }
+        }
+    }
+    for assembly in &discovery.cdk_assemblies {
+        match cdk::parse_assembly(assembly, "", &template_options) {
+            Ok(stacks) => say!(out, "ok       cdk {} ({} stacks)", relative(assembly), stacks.len()),
+            Err(error) => {
+                failures += 1;
+                say!(out, "invalid  cdk {}: {error:#}", relative(assembly));
+            }
+        }
     }
     for warning in &discovery.warnings {
         say!(out, "warning  {warning}");
     }
-    if discovery.plans.is_empty() && discovery.terraform_roots.is_empty() {
-        say!(out, "-        no Terraform configuration or plan JSON found");
+    if out.lines().count() == 1 {
+        say!(out, "-        no infrastructure code found");
     }
 
     emit(&out)?;
@@ -355,6 +393,10 @@ fn providers() -> Result<u8> {
     say!(out, "\nPriced AWS resource types:");
     for (resource_type, service) in mappings.supported_types() {
         say!(out, "  {resource_type:<36}{service}");
+    }
+    say!(out, "\nCloudFormation and CDK resource types priced as the above:");
+    for (cloudformation_type, mapped_type) in cloudformation::priced_types() {
+        say!(out, "  {cloudformation_type:<44}{mapped_type}");
     }
     say!(
         out,

@@ -10,8 +10,8 @@ repository ─► discovery ─► IaC adapter ─► normaliser ─► cost eng
 
 | Module | Responsibility | Must not know about |
 | --- | --- | --- |
-| `discovery` | Bounded walk; finds plan files and Terraform roots | pricing |
-| `iac::terraform_plan`, `iac::terraform_hcl` | Produce `model::Input` | pricing, reporting |
+| `discovery` | Bounded walk; finds plans, Terraform roots, Terragrunt configs, templates, cloud assemblies | pricing |
+| `iac::terraform_plan`, `iac::terraform_hcl`, `iac::terragrunt`, `iac::cloudformation`, `iac::cdk` | Produce `model::Input` | pricing, reporting |
 | `aws` | Region resolution and derived attributes | how the IaC was written |
 | `mapping` + `data/` | Which price components a resource type has | arithmetic |
 | `pricing` | Answer `PriceQuery` with list prices; cache | IaC |
@@ -71,9 +71,25 @@ unknown, and an unknown `count` assumes one instance and says so.
 **Sensitive values are removed at parse time,** using the plan's sensitivity masks,
 so no later stage can leak them.
 
-**Nothing is executed.** There is no subprocess code in this slice. Running
-`terraform`, `terragrunt` or `cdk` on request is future work and needs its own
-allowlist, timeout and output limits.
+**Nothing is executed.** There is no subprocess code. Running `terraform`,
+`terragrunt` or `cdk synth` on request is future work and needs its own allowlist,
+timeout and output limits. Until then CDK is read from an existing cloud assembly and
+Terragrunt is analysed statically.
+
+**CloudFormation is translated into the mapped model.** A template resource with a
+price mapping becomes the mapped type with the mapped attribute names
+(`AWS::RDS::DBInstance.DBInstanceClass` becomes `aws_db_instance.instance_class`), from
+one table in `iac::cloudformation`. The mappings, derived attributes and FinOps rules
+therefore exist once. A type without a mapping keeps its CloudFormation name and is
+reported as unsupported or, if listed in `no_charge.yaml`, as having no direct charge.
+
+**A Terragrunt unit is its module plus inputs.** Inputs arrive the way `TF_VAR_*`
+does, so tfvars files in the module still override them. When the `inputs` expression
+as a whole cannot be evaluated, every module variable is unknown rather than left at
+its default. A module that a unit deploys is not also analysed as a root of its own.
+
+**Terragrunt functions read thread-local state.** hcl-rs functions are plain `fn`
+pointers, so the unit directory they answer for is set per unit in a thread local.
 
 **A default usage profile is applied and shown.** With no usage at all, most
 serverless and storage resources would be unpriced and the report of little use. The
@@ -87,11 +103,18 @@ listed under "Usage assumptions".
 - Reference detection in static analysis scans expression text rather than the syntax tree.
 - Root-module detection uses a line scan for local `source =` values.
 - Account-wide free tiers are applied per resource where AWS publishes them as tiers.
-- Two root modules that declare the same address are both reported under that address.
+- Two sources that declare the same address are both reported under that address. Two
+  Terragrunt units of one module always do.
+- CloudFormation parameters take their defaults; there is no way yet to supply values.
+- A template without `AWSTemplateFormatVersion` is not recognised. SAM resource types
+  (`AWS::Serverless::*`) are unsupported.
+- For `AWS::EC2::Instance` only the first block device mapping is priced.
+- `Fn::Sub` references are not followed when linking a service to its task definition.
 
 ## Not built yet
 
-Terragrunt, CloudFormation, CDK, Azure, GCP, account-aware pricing, baseline files
+Opt-in execution of `terragrunt` and `cdk synth`, the CloudFormation cost estimation
+API as a cross-check, Azure, GCP, account-aware pricing, baseline files
 and git-ref baselines, a data-driven rule engine, Markdown and SARIF output, `init`,
 `auth`, `doctor` and `pricing` commands, cache size management, fuzzing, benchmarks,
 release binaries, eCommerce and AI usage presets, Bedrock token pricing.

@@ -14,6 +14,8 @@ use crate::iac::terraform_plan;
 /// Directories that never contain first-party IaC and are often huge.
 const SKIPPED_DIRS: &[&str] = &["node_modules", "vendor", "target", "cdk.out", "dist", "build"];
 
+const TEMPLATE_EXTENSIONS: &[&str] = &[".yaml", ".yml", ".template", ".json"];
+
 #[derive(Debug, Clone, Copy)]
 pub struct Limits {
     pub max_depth: usize,
@@ -40,8 +42,12 @@ pub struct Discovery {
     /// Terraform root modules: directories with `.tf` files that no other scanned
     /// directory uses as a local module.
     pub terraform_roots: Vec<PathBuf>,
-    /// IaC technologies that were seen but are not analysed yet.
-    pub not_yet_supported: BTreeSet<&'static str>,
+    /// Every `terragrunt.hcl`; the adapter decides which of them are units.
+    pub terragrunt: Vec<PathBuf>,
+    /// CloudFormation templates, recognised by `AWSTemplateFormatVersion`.
+    pub templates: Vec<PathBuf>,
+    /// Synthesized CDK cloud assemblies (directories holding a `manifest.json`).
+    pub cdk_assemblies: Vec<PathBuf>,
     pub warnings: Vec<String>,
 }
 
@@ -108,19 +114,30 @@ pub fn discover(root: &Path, limits: &Limits) -> Result<Discovery> {
                 .or_default()
                 .push(path.to_path_buf());
         } else if name == "terragrunt.hcl" {
-            discovery.not_yet_supported.insert("Terragrunt");
+            discovery.terragrunt.push(path.to_path_buf());
         } else if name == "cdk.json" {
-            discovery.not_yet_supported.insert("AWS CDK");
+            // The assembly directory itself is not walked; it is found through the app.
+            let assembly = dir.join(cdk_output(path, limits));
+            if assembly.join("manifest.json").is_file() {
+                discovery.cdk_assemblies.push(assembly);
+            } else {
+                discovery.warnings.push(format!(
+                    "{} is a CDK app with no synthesized cloud assembly. Run `cdk synth` there and scan again; CDK code is never executed by this tool.",
+                    dir.strip_prefix(root).unwrap_or(dir).display()
+                ));
+            }
         } else if name.ends_with(".json") && name.to_lowercase().contains("plan") {
             match read_limited(path, limits.max_file_bytes) {
                 Ok(text) if terraform_plan::looks_like_plan(&text) => discovery.plans.push(path.to_path_buf()),
                 Ok(_) => {}
                 Err(reason) => discovery.warnings.push(format!("skipped {}: {reason}", path.display())),
             }
-        } else if (name.ends_with(".yaml") || name.ends_with(".yml") || name.ends_with(".template"))
+        } else if TEMPLATE_EXTENSIONS.iter().any(|extension| name.ends_with(extension))
+            // ponytail: a template without the optional version line is not recognised.
+            // Parse candidates fully if that turns out to miss real templates.
             && head(path).contains("AWSTemplateFormatVersion")
         {
-            discovery.not_yet_supported.insert("CloudFormation");
+            discovery.templates.push(path.to_path_buf());
         }
     }
 
@@ -141,6 +158,15 @@ pub fn read_limited(path: &Path, max_bytes: u64) -> Result<String, String> {
         return Err(format!("{size} bytes is above the {max_bytes} byte limit"));
     }
     fs::read_to_string(path).map_err(|error| error.to_string())
+}
+
+/// The `output` directory named in `cdk.json`, or the CDK default.
+fn cdk_output(cdk_json: &Path, limits: &Limits) -> String {
+    read_limited(cdk_json, limits.max_file_bytes)
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|app| app["output"].as_str().map(str::to_string))
+        .unwrap_or_else(|| "cdk.out".to_string())
 }
 
 fn head(path: &Path) -> String {
@@ -228,16 +254,28 @@ mod tests {
         write(root, "infra/plan-notes.json", r#"{"hello": "world"}"#);
         write(root, "live/terragrunt.hcl", "");
         write(root, "app/cdk.json", "{}");
+        write(root, "app/cdk.out/manifest.json", "{}");
+        write(
+            root,
+            "app/cdk.out/App.template.json",
+            r#"{"AWSTemplateFormatVersion": "2010-09-09"}"#,
+        );
+        write(root, "unsynthesized/cdk.json", r#"{"output": "build/out"}"#);
         write(root, "cfn/stack.yaml", "AWSTemplateFormatVersion: '2010-09-09'\n");
+        write(root, "cfn/stack.json", r#"{"AWSTemplateFormatVersion": "2010-09-09"}"#);
+        write(root, "cfn/values.yaml", "replicas: 2\n");
 
         let discovery = discover(root, &Limits::default()).unwrap();
 
         assert_eq!(relative(root, &discovery.terraform_roots), vec!["infra", "other"]);
         assert_eq!(relative(root, &discovery.plans), vec!["infra/tfplan.json"]);
+        assert_eq!(relative(root, &discovery.terragrunt), vec!["live/terragrunt.hcl"]);
         assert_eq!(
-            discovery.not_yet_supported.iter().copied().collect::<Vec<_>>(),
-            vec!["AWS CDK", "CloudFormation", "Terragrunt"]
+            relative(root, &discovery.templates),
+            vec!["cfn/stack.json", "cfn/stack.yaml"]
         );
+        assert_eq!(relative(root, &discovery.cdk_assemblies), vec!["app/cdk.out"]);
+        assert!(discovery.warnings[0].contains("no synthesized cloud assembly"));
     }
 
     #[test]

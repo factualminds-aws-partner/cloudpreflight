@@ -12,7 +12,7 @@ use rust_decimal::Decimal;
 use crate::config::Config;
 use crate::discovery::{self, Discovery, Limits};
 use crate::estimate::{self, Engine};
-use crate::iac::{terraform_hcl, terraform_plan};
+use crate::iac::{cdk, cloudformation, terraform_hcl, terraform_plan, terragrunt};
 use crate::mapping::Mappings;
 use crate::model::{
     Assumption, BudgetStatus, ChangeEstimate, Confidence, Counts, IacSource, Input, Outcome, PriceKind, Report,
@@ -66,9 +66,9 @@ pub async fn run(options: &ScanOptions) -> Result<Report> {
     let limits = limits(&config);
     let mut warnings = Vec::new();
     let mut errors = Vec::new();
-    let (project, mut inputs) = load_inputs(options, &limits, &mut warnings, &mut errors)?;
-
     let default_region = options.region.clone().or_else(|| config.aws.region.clone());
+    let (project, mut inputs) = load_inputs(options, &limits, default_region.as_deref(), &mut warnings, &mut errors)?;
+
     let mut region_assumed = false;
     for input in &mut inputs {
         let fallback = default_region.as_deref().unwrap_or(aws::FALLBACK_REGION);
@@ -77,7 +77,7 @@ pub async fn run(options: &ScanOptions) -> Result<Report> {
     }
     if region_assumed {
         warnings.push(format!(
-            "No region found in the provider configuration; {} prices assumed. Pass --region to set it.",
+            "No region found in the infrastructure code; {} prices assumed. Pass --region to set it.",
             aws::FALLBACK_REGION
         ));
     }
@@ -228,6 +228,7 @@ pub fn limits(config: &Config) -> Limits {
 fn load_inputs(
     options: &ScanOptions,
     limits: &Limits,
+    region: Option<&str>,
     warnings: &mut Vec<String>,
     errors: &mut Vec<String>,
 ) -> Result<(String, Vec<Input>)> {
@@ -249,13 +250,12 @@ fn load_inputs(
         project,
         plans,
         terraform_roots,
-        not_yet_supported,
+        terragrunt: terragrunt_configs,
+        templates,
+        cdk_assemblies,
         warnings: found,
     } = discovery::discover(&options.path, limits)?;
     warnings.extend(found);
-    for technology in &not_yet_supported {
-        warnings.push(format!("{technology} files were detected but are not analysed yet."));
-    }
     (options.progress)("Repository scanned".to_string());
 
     let relative = |path: &Path| {
@@ -289,16 +289,72 @@ fn load_inputs(
         scan_root: &root,
         max_file_bytes: limits.max_file_bytes,
     };
-    for dir in terraform_roots.iter().filter(|dir| !planned_dirs.contains(*dir)) {
+    // A unit and the module it deploys are analysed once, with the unit's inputs.
+    let mut terragrunt_dirs = BTreeSet::new();
+    for config in &terragrunt_configs {
+        let dir = config.parent().unwrap_or(&root);
+        if planned_dirs.contains(dir) {
+            continue;
+        }
+        match terragrunt::parse_unit(config, &relative(dir), &hcl_options) {
+            Ok(Some(unit)) => {
+                terragrunt_dirs.extend(dir.canonicalize());
+                terragrunt_dirs.extend(unit.module_dir);
+                inputs.push(unit.input);
+            }
+            Ok(None) => {}
+            Err(error) => errors.push(format!("{}: {error:#}. The scan continued without it.", relative(dir))),
+        }
+    }
+
+    let standalone = |dir: &&PathBuf| {
+        !planned_dirs.contains(*dir) && !dir.canonicalize().is_ok_and(|dir| terragrunt_dirs.contains(&dir))
+    };
+    for dir in terraform_roots.iter().filter(standalone) {
         match terraform_hcl::parse_root(dir, &relative(dir), &hcl_options) {
             Ok(input) => inputs.push(input),
             Err(error) => errors.push(format!("{}: {error:#}. The scan continued without it.", relative(dir))),
         }
     }
 
+    let template_options = cloudformation::Options {
+        scan_root: &root,
+        max_file_bytes: limits.max_file_bytes,
+        region,
+    };
+    // A template that another one includes as a nested stack is not also a stack of its own.
+    let mut stacks = Vec::new();
+    let mut nested = BTreeSet::new();
+    for template in &templates {
+        let origin = relative(template);
+        match cloudformation::parse_file(template, &origin, "", IacSource::CloudFormation, &template_options) {
+            Ok(parsed) => {
+                nested.extend(parsed.nested);
+                stacks.push((template, parsed.input));
+            }
+            Err(error) => errors.push(format!("{origin}: {error:#}. The scan continued without it.")),
+        }
+    }
+    inputs.extend(
+        stacks
+            .into_iter()
+            .filter(|(template, _)| !template.canonicalize().is_ok_and(|path| nested.contains(&path)))
+            .map(|(_, input)| input),
+    );
+
+    for assembly in &cdk_assemblies {
+        match cdk::parse_assembly(assembly, &relative(assembly), &template_options) {
+            Ok(stacks) => inputs.extend(stacks),
+            Err(error) => errors.push(format!(
+                "{}: {error:#}. The scan continued without it.",
+                relative(assembly)
+            )),
+        }
+    }
+
     if inputs.is_empty() && errors.is_empty() {
         warnings.push(format!(
-            "No Terraform configuration or plan JSON found in {}. Nothing was estimated.",
+            "No Terraform, Terragrunt, CloudFormation or synthesized CDK found in {}. Nothing was estimated.",
             options.path.display()
         ));
     }

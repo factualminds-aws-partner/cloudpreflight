@@ -1,6 +1,48 @@
 # Resource types that carry no direct charge of their own.
 # Anything not listed here and not mapped is reported as unsupported, never as $0.
 resource_types:
+  - AWS::ApplicationAutoScaling::ScalableTarget
+  - AWS::ApplicationAutoScaling::ScalingPolicy
+  - AWS::CDK::Metadata
+  - AWS::CertificateManager::Certificate
+  - AWS::CloudFormation::CustomResource
+  - AWS::CloudFormation::WaitConditionHandle
+  - AWS::CloudFront::CachePolicy
+  - AWS::CloudFront::CloudFrontOriginAccessIdentity
+  - AWS::CloudFront::OriginAccessControl
+  - AWS::CloudFront::OriginRequestPolicy
+  - AWS::CloudFront::ResponseHeadersPolicy
+  - AWS::EC2::InternetGateway
+  - AWS::EC2::KeyPair
+  - AWS::EC2::LaunchTemplate
+  - AWS::EC2::NetworkAcl
+  - AWS::EC2::NetworkAclEntry
+  - AWS::EC2::Route
+  - AWS::EC2::RouteTable
+  - AWS::EC2::SecurityGroup
+  - AWS::EC2::SecurityGroupEgress
+  - AWS::EC2::SecurityGroupIngress
+  - AWS::EC2::Subnet
+  - AWS::EC2::SubnetNetworkAclAssociation
+  - AWS::EC2::SubnetRouteTableAssociation
+  - AWS::EC2::VPC
+  - AWS::EC2::VPCGatewayAttachment
+  - AWS::ECS::Cluster
+  - AWS::ECS::ClusterCapacityProviderAssociations
+  - AWS::ElastiCache::ParameterGroup
+  - AWS::ElastiCache::SubnetGroup
+  - AWS::ElasticLoadBalancingV2::Listener
+  - AWS::ElasticLoadBalancingV2::ListenerRule
+  - AWS::ElasticLoadBalancingV2::TargetGroup
+  - AWS::IAM::InstanceProfile
+  - AWS::IAM::ManagedPolicy
+  - AWS::IAM::Policy
+  - AWS::IAM::Role
+  - AWS::Lambda::EventSourceMapping
+  - AWS::Lambda::Permission
+  - AWS::RDS::DBParameterGroup
+  - AWS::RDS::DBSubnetGroup
+  - AWS::S3::BucketPolicy
   - aws_acm_certificate
   - aws_acm_certificate_validation
   - aws_appautoscaling_policy

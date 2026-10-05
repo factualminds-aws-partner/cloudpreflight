@@ -13,11 +13,13 @@ pub fn findings(changes: &[ResourceChange], estimates: &[ChangeEstimate], assump
     let planned: Vec<&Resource> = changes.iter().filter_map(|change| change.after.as_ref()).collect();
     let mut findings = Vec::new();
 
-    for resource in &planned {
-        let estimate = estimates
-            .iter()
-            .find(|estimate| estimate.address == resource.address)
-            .and_then(|estimate| estimate.after.as_ref());
+    for (index, change) in changes.iter().enumerate() {
+        let Some(resource) = &change.after else {
+            continue;
+        };
+        // Estimates are in the order of the changes. Addresses are not unique across
+        // sources: two Terragrunt units of one module share every address.
+        let estimate = estimates.get(index).and_then(|estimate| estimate.after.as_ref());
 
         match resource.resource_type.as_str() {
             "aws_db_instance" => findings.extend(rds_multi_az(resource, estimate)),
