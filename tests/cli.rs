@@ -439,8 +439,12 @@ async fn a_broken_root_is_reported_and_the_rest_of_the_repository_is_still_scann
     let run = sandbox.run(&["scan", dir.path().to_str().unwrap()]);
 
     assert_eq!(run.code, 1, "errors make the exit code non-zero");
-    assert!(run.stdout.contains("good") || run.stdout.contains("aws_nat_gateway.n"));
     assert!(run.stdout.contains("aws_nat_gateway.n"), "{}", run.stdout);
+    // Long temp paths move the wrap point, so compare with line breaks collapsed.
+    let run = Run {
+        stdout: run.stdout.split_whitespace().collect::<Vec<_>>().join(" "),
+        ..run
+    };
     assert!(
         run.stdout.contains("bad: ") && run.stdout.contains("not valid HCL"),
         "{}",
