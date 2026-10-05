@@ -1,0 +1,24 @@
+resource_types: [aws_lb, aws_alb]
+service: Load Balancing
+usage_group: aws.lb
+components:
+  - name: Load balancer hours
+    category: compute
+    price_service: AWSELB
+    filters:
+      productFamily: ${_lb_family}
+      operation: ${_lb_operation}
+      usagetype: "@LoadBalancerUsage"
+    unit: Hrs
+    quantity: [hours]
+  - name: Load balancer capacity units
+    category: requests
+    price_service: AWSELB
+    filters:
+      productFamily: ${_lb_family}
+      operation: ${_lb_operation}
+      usagetype: "@LCUUsage"
+    unit: LCU-Hrs
+    quantity:
+      - hours
+      - usage: lcu_average

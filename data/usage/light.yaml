@@ -1,0 +1,10 @@
+name: light
+description: Development or low-traffic workload. Illustrative numbers, not measurements; override them in .factualminds-cost.yaml.
+usage:
+  aws:
+    s3: {storage_gb: 50, requests_monthly: 1000000, write_requests_monthly: 100000}
+    lambda: {invocations_monthly: 500000, average_duration_ms: 200}
+    lb: {lcu_average: 1}
+    nat_gateway: {data_processed_gb: 50}
+    cloudfront: {data_transfer_out_gb: 100, https_requests_monthly: 1000000}
+    dynamodb: {storage_gb: 5, read_request_units_monthly: 2000000, write_request_units_monthly: 500000}

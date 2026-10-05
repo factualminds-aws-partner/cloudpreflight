@@ -1,0 +1,28 @@
+resource_types: [aws_instance]
+service: EC2
+notes:
+  - The root volume is priced only when root_block_device sets its size and type; otherwise they come from the AMI.
+components:
+  - name: Instance hours
+    category: compute
+    price_service: AmazonEC2
+    assumes: Linux on-demand rate; the operating system comes from the AMI and is not visible in the IaC
+    filters:
+      productFamily: Compute Instance
+      instanceType: ${instance_type}
+      operatingSystem: Linux
+      tenancy: ${_tenancy}
+      preInstalledSw: NA
+      capacitystatus: Used
+      operation: RunInstances
+    unit: Hrs
+    quantity: [hours]
+  - name: Root volume storage
+    category: storage
+    price_service: AmazonEC2
+    filters:
+      productFamily: Storage
+      volumeApiName: ${root_block_device.0.volume_type}
+    unit: GB-Mo
+    quantity:
+      - attr: root_block_device.0.volume_size

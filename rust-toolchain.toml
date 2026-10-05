@@ -1,0 +1,5 @@
+# Toolchain used for development and CI. The minimum supported version is
+# `rust-version` in Cargo.toml and is checked by a separate CI job.
+[toolchain]
+channel = "1.99.0"
+components = ["rustfmt", "clippy"]

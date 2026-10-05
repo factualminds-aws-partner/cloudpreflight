@@ -1,0 +1,19 @@
+resource_types: [aws_elasticache_cluster, aws_elasticache_replication_group]
+service: ElastiCache
+notes:
+  - Node-based clusters only. Backup storage and data transfer are not modelled.
+components:
+  - name: Cache node hours
+    category: compute
+    price_service: AmazonElastiCache
+    filters:
+      productFamily: Cache Instance
+      instanceType: ${node_type}
+      cacheEngine: ${_engine}
+      # Excludes extended-support SKUs. The size in the usage type is abbreviated
+      # by AWS for some classes, so it is matched by prefix only.
+      usagetype: "@NodeUsage:*"
+    unit: Hrs
+    quantity:
+      - hours
+      - attr: _nodes

@@ -1,0 +1,35 @@
+resource_types: [aws_s3_bucket]
+service: S3
+usage_group: aws.s3
+notes:
+  - Data transfer out, retrieval and replication are not modelled.
+components:
+  - name: Storage
+    category: storage
+    price_service: AmazonS3
+    assumes: S3 Standard storage class
+    filters:
+      productFamily: Storage
+      volumeType: Standard
+      storageClass: General Purpose
+    unit: GB-Mo
+    quantity:
+      - usage: storage_gb
+  - name: PUT, COPY, POST, LIST requests
+    category: requests
+    price_service: AmazonS3
+    filters:
+      group: S3-API-Tier1
+      usagetype: "@Requests-Tier1"
+    unit: Requests
+    quantity:
+      - usage: write_requests_monthly
+  - name: GET and other requests
+    category: requests
+    price_service: AmazonS3
+    filters:
+      group: S3-API-Tier2
+      usagetype: "@Requests-Tier2"
+    unit: Requests
+    quantity:
+      - usage: requests_monthly

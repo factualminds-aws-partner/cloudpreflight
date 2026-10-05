@@ -1,0 +1,10 @@
+name: standard
+description: Typical production web application. Illustrative numbers, not measurements; override them in .factualminds-cost.yaml.
+usage:
+  aws:
+    s3: {storage_gb: 500, requests_monthly: 10000000, write_requests_monthly: 1000000}
+    lambda: {invocations_monthly: 5000000, average_duration_ms: 200}
+    lb: {lcu_average: 5}
+    nat_gateway: {data_processed_gb: 500}
+    cloudfront: {data_transfer_out_gb: 1000, https_requests_monthly: 10000000}
+    dynamodb: {storage_gb: 50, read_request_units_monthly: 20000000, write_request_units_monthly: 5000000}

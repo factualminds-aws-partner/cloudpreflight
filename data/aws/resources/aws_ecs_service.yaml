@@ -1,0 +1,27 @@
+resource_types: [aws_ecs_service]
+service: ECS
+notes:
+  - Fargate Linux/x86 rates. Services on EC2 capacity have no charge of their own; the cost is in the instances.
+components:
+  - name: Fargate vCPU hours
+    category: compute
+    price_service: AmazonECS
+    when: {attr: _launch_type, in: [FARGATE]}
+    filters:
+      usagetype: "@Fargate-vCPU-Hours:perCPU"
+    unit: hours
+    quantity:
+      - hours
+      - attr: desired_count
+      - attr: _vcpu
+  - name: Fargate memory GB hours
+    category: compute
+    price_service: AmazonECS
+    when: {attr: _launch_type, in: [FARGATE]}
+    filters:
+      usagetype: "@Fargate-GB-Hours"
+    unit: hours
+    quantity:
+      - hours
+      - attr: desired_count
+      - attr: _memory_gb

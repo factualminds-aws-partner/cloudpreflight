@@ -1,0 +1,38 @@
+resource_types: [aws_db_instance]
+service: RDS
+notes:
+  - Backup storage beyond the free allocation, data transfer and Performance Insights are not modelled.
+components:
+  - name: Database instance hours
+    category: compute
+    price_service: AmazonRDS
+    filters:
+      productFamily: Database Instance
+      instanceType: ${instance_class}
+      databaseEngine: ${_engine}
+      deploymentOption: ${_deployment}
+    unit: Hrs
+    quantity: [hours]
+  - name: Allocated storage
+    category: storage
+    price_service: AmazonRDS
+    filters:
+      productFamily: Database Storage
+      volumeType: ${_volume_type}
+      databaseEngine: Any
+      deploymentOption: ${_deployment}
+    unit: GB-Mo
+    quantity:
+      - attr: allocated_storage
+  - name: Provisioned IOPS
+    category: provisioned_capacity
+    price_service: AmazonRDS
+    when: {attr: storage_type, in: [io1]}
+    filters:
+      productFamily: Provisioned IOPS
+      databaseEngine: Any
+      deploymentOption: ${_deployment}
+      usagetype: "@${_iops_usagetype}"
+    unit: IOPS-Mo
+    quantity:
+      - attr: iops

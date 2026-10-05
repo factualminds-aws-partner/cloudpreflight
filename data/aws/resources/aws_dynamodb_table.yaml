@@ -1,0 +1,61 @@
+resource_types: [aws_dynamodb_table]
+service: DynamoDB
+usage_group: aws.dynamodb
+notes:
+  - Standard table class rates. Global secondary indexes, streams, backups and global tables are not modelled.
+components:
+  - name: Provisioned read capacity
+    category: provisioned_capacity
+    price_service: AmazonDynamoDB
+    when: {attr: _billing_mode, in: [PROVISIONED]}
+    filters:
+      group: DDB-ReadUnits
+      operation: CommittedThroughput
+      usagetype: "@ReadCapacityUnit-Hrs"
+    unit: ReadCapacityUnit-Hrs
+    quantity:
+      - hours
+      - attr: read_capacity
+  - name: Provisioned write capacity
+    category: provisioned_capacity
+    price_service: AmazonDynamoDB
+    when: {attr: _billing_mode, in: [PROVISIONED]}
+    filters:
+      group: DDB-WriteUnits
+      operation: CommittedThroughput
+      usagetype: "@WriteCapacityUnit-Hrs"
+    unit: WriteCapacityUnit-Hrs
+    quantity:
+      - hours
+      - attr: write_capacity
+  - name: On-demand read request units
+    category: requests
+    price_service: AmazonDynamoDB
+    when: {attr: _billing_mode, in: [PAY_PER_REQUEST]}
+    filters:
+      group: DDB-ReadUnits
+      operation: PayPerRequestThroughput
+      usagetype: "@ReadRequestUnits"
+    unit: ReadRequestUnits
+    quantity:
+      - usage: read_request_units_monthly
+  - name: On-demand write request units
+    category: requests
+    price_service: AmazonDynamoDB
+    when: {attr: _billing_mode, in: [PAY_PER_REQUEST]}
+    filters:
+      group: DDB-WriteUnits
+      operation: PayPerRequestThroughput
+      usagetype: "@WriteRequestUnits"
+    unit: WriteRequestUnits
+    quantity:
+      - usage: write_request_units_monthly
+  - name: Table storage
+    category: storage
+    price_service: AmazonDynamoDB
+    filters:
+      productFamily: Database Storage
+      volumeType: Amazon DynamoDB - Indexed DataStore
+    unit: GB-Mo
+    quantity:
+      - usage: storage_gb

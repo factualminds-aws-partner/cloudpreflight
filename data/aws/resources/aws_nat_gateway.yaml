@@ -1,0 +1,21 @@
+resource_types: [aws_nat_gateway]
+service: NAT Gateway
+usage_group: aws.nat_gateway
+components:
+  - name: NAT gateway hours
+    category: compute
+    price_service: AmazonEC2
+    filters:
+      productFamily: NAT Gateway
+      usagetype: "@NatGateway-Hours"
+    unit: Hrs
+    quantity: [hours]
+  - name: Data processed
+    category: data_transfer
+    price_service: AmazonEC2
+    filters:
+      productFamily: NAT Gateway
+      usagetype: "@NatGateway-Bytes"
+    unit: GB
+    quantity:
+      - usage: data_processed_gb

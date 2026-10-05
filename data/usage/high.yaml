@@ -1,0 +1,10 @@
+name: high
+description: High-traffic production workload. Illustrative numbers, not measurements; override them in .factualminds-cost.yaml.
+usage:
+  aws:
+    s3: {storage_gb: 5000, requests_monthly: 100000000, write_requests_monthly: 10000000}
+    lambda: {invocations_monthly: 50000000, average_duration_ms: 200}
+    lb: {lcu_average: 25}
+    nat_gateway: {data_processed_gb: 5000}
+    cloudfront: {data_transfer_out_gb: 10000, https_requests_monthly: 100000000}
+    dynamodb: {storage_gb: 500, read_request_units_monthly: 200000000, write_request_units_monthly: 50000000}

@@ -1,0 +1,28 @@
+resource_types: [aws_lambda_function]
+service: Lambda
+usage_group: aws.lambda
+notes:
+  - The account-wide Lambda free tier is not applied.
+components:
+  - name: Requests
+    category: requests
+    price_service: AWSLambda
+    filters:
+      usagetype: "@${_request_usagetype}"
+    unit: Requests
+    quantity:
+      - usage: invocations_monthly
+  - name: Duration
+    category: compute
+    price_service: AWSLambda
+    filters:
+      usagetype: "@${_duration_usagetype}"
+    unit: Lambda-GB-Second
+    # invocations x milliseconds x 0.001 s/ms x MB x (1/1024) GB/MB
+    quantity:
+      - usage: invocations_monthly
+      - usage: average_duration_ms
+      - const: "0.001"
+      - attr: memory_size
+        default: "128"
+      - const: "0.0009765625"

@@ -1,0 +1,26 @@
+resource_types: [aws_cloudfront_distribution]
+service: CloudFront
+usage_group: aws.cloudfront
+components:
+  - name: Data transfer out to internet
+    category: data_transfer
+    price_service: AmazonCloudFront
+    price_region: aws-other
+    assumes: all traffic priced at United States edge rates
+    filters:
+      productFamily: Data Transfer
+      transferType: CloudFront Outbound
+      fromLocation: United States
+    unit: GB
+    quantity:
+      - usage: data_transfer_out_gb
+  - name: HTTPS requests
+    category: requests
+    price_service: AmazonCloudFront
+    price_region: aws-other
+    assumes: all requests priced at United States edge rates
+    filters:
+      usagetype: US-Requests-Tier2-HTTPS
+    unit: Requests
+    quantity:
+      - usage: https_requests_monthly

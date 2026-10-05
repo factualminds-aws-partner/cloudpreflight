@@ -1,0 +1,36 @@
+resource_types: [aws_ebs_volume]
+service: EBS
+notes:
+  - gp3 throughput above the included 125 MiB/s and snapshots are not modelled.
+components:
+  - name: Volume storage
+    category: storage
+    price_service: AmazonEC2
+    filters:
+      productFamily: Storage
+      volumeApiName: ${type:-gp2}
+    unit: GB-Mo
+    quantity:
+      - attr: size
+  - name: Provisioned IOPS
+    category: provisioned_capacity
+    price_service: AmazonEC2
+    when: {attr: type, in: [io1]}
+    filters:
+      group: EBS IOPS
+      volumeApiName: ${type}
+    unit: IOPS-Mo
+    quantity:
+      - attr: iops
+  - name: Provisioned IOPS above gp3 baseline
+    category: provisioned_capacity
+    price_service: AmazonEC2
+    when: {attr: type, in: [gp3]}
+    free_units: "3000"
+    filters:
+      group: EBS IOPS
+      volumeApiName: gp3
+    unit: IOPS-Mo
+    quantity:
+      - attr: iops
+        default: "3000"
