@@ -1,5 +1,9 @@
 # cloudpreflight
 
+[![CI](https://github.com/factualminds-aws-partner/cloudpreflight/actions/workflows/ci.yml/badge.svg)](https://github.com/factualminds-aws-partner/cloudpreflight/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Rust 1.89+](https://img.shields.io/badge/rust-1.89%2B-orange.svg)](Cargo.toml)
+
 **See the cost before you ship the infrastructure.**
 
 `cloudpreflight` reads Terraform, works out what it will create, and estimates the
@@ -61,8 +65,10 @@ unsupported. It is never shown as `$0`.
 Requires Rust 1.89 or newer.
 
 ```
-cargo install --path .
+cargo install --git https://github.com/factualminds-aws-partner/cloudpreflight --locked
 ```
+
+Or from a clone: `cargo install --path .`
 
 ## Quick start
 
@@ -193,7 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install --git https://github.com/OWNER/cloudpreflight --locked
+      - run: cargo install --git https://github.com/factualminds-aws-partner/cloudpreflight --locked
       - uses: actions/cache@v4
         with:
           path: ~/.cache/cloudpreflight
@@ -217,7 +223,7 @@ cost:
   variables:
     CLOUDPREFLIGHT_CACHE_DIR: $CI_PROJECT_DIR/.cloudpreflight-cache
   script:
-    - cargo install --git https://github.com/OWNER/cloudpreflight --locked
+    - cargo install --git https://github.com/factualminds-aws-partner/cloudpreflight --locked
     - cloudpreflight scan . --format json --budget 2500 > cost.json
   artifacts:
     when: always

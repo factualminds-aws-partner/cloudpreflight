@@ -5,6 +5,7 @@ edition = "2024"
 rust-version = "1.89"
 description = "IaC preflight for cloud cost: estimate what a Terraform change will cost before it ships"
 license = "Apache-2.0"
+repository = "https://github.com/factualminds-aws-partner/cloudpreflight"
 readme = "README.md"
 keywords = ["terraform", "aws", "finops", "cost", "cli"]
 categories = ["command-line-utilities"]
